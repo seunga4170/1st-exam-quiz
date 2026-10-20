@@ -160,21 +160,31 @@
       }
     });
 
-    // F12 개발자 도구 및 소스 보기 차단
+    // Windows 및 Mac(Command/Option) 개발자 도구 및 소스 보기 단축키 완벽 차단
     document.addEventListener('keydown', function(e) {
-      if (
-        e.key === 'F12' || 
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
-        (e.ctrlKey && e.key === 'u')
-      ) {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      
+      // Mac용 차단 조건: Cmd + Option + I / J / C / U
+      const isMacDevTools = e.metaKey && e.altKey && (
+        e.code === 'KeyI' || e.code === 'KeyJ' || e.code === 'KeyC' || e.code === 'KeyU'
+      );
+      
+      // Windows용 차단 조건: F12, Ctrl + Shift + I / J / C, Ctrl + U
+      const isWinDevTools = e.key === 'F12' || (
+        e.ctrlKey && e.shiftKey && (e.code === 'KeyI' || e.code === 'KeyJ' || e.code === 'KeyC')
+      ) || (e.ctrlKey && e.code === 'KeyU');
+
+      if (isMacDevTools || isWinDevTools) {
         e.preventDefault();
         e.stopPropagation();
+        return false;
       }
     });
 
     // 마우스 우클릭 검사 메뉴 방지
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
+      return false;
     });
   </script>
 </body>
