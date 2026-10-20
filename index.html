@@ -120,8 +120,7 @@
 
   <!-- 🔐 비밀번호 검증 로직 -->
   <script>
-    // 원하는 사이트 비밀번호를 여기에 적어주세요.
-    const SITE_PASSWORD = "2026quiz"; 
+    const HASHED_PASSWORD = "20833f2f80aa1e3d8f2f1353ba417a20211ee7da9c4b5f88e1183e3c9bfa6f11";
 
     const modal = document.getElementById('password-modal');
     const content = document.getElementById('portal-content');
@@ -129,7 +128,15 @@
     const input = document.getElementById('password-input');
     const errorMsg = document.getElementById('password-error');
 
-    // 이미 한 번 인증한 적이 있는지 체크 (브라우저 창 닫기 전까지 유지)
+    // 입력값을 SHA-256 해시로 변환하는 함수
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // 이미 한 번 인증한 적이 있는지 확인 (브라우저 닫기 전까지 유지)
     if (sessionStorage.getItem('quiz_auth') === 'granted') {
       modal.classList.add('hidden');
       content.classList.remove('hidden');
@@ -137,11 +144,12 @@
       input.focus();
     }
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const entered = input.value.trim();
+      const enteredHash = await sha256(entered);
 
-      if (entered === SITE_PASSWORD) {
+      if (enteredHash === HASHED_PASSWORD) {
         sessionStorage.setItem('quiz_auth', 'granted');
         modal.classList.add('hidden');
         content.classList.remove('hidden');
@@ -150,6 +158,23 @@
         input.value = '';
         input.focus();
       }
+    });
+
+    // F12 개발자 도구 및 소스 보기 차단
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+        (e.ctrlKey && e.key === 'u')
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    // 마우스 우클릭 검사 메뉴 방지
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
     });
   </script>
 </body>
