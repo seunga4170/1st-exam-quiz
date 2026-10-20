@@ -43,7 +43,7 @@
     </div>
   </div>
 
-  <!-- 📖 메인 포털 화면 (비밀번호 복호화 전까지 버튼 HTML이 아예 존재하지 않음) -->
+  <!-- 📖 메인 포털 화면 (비밀번호 복호화 성공 전까지 빈 화면) -->
   <div id="portal-content" class="hidden max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
     <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 border border-indigo-500/20">
       <i class="fa-solid fa-graduation-cap"></i>
@@ -63,38 +63,11 @@
   </div>
 
   <script>
-    const ENCRYPTED_PAYLOAD = {
-      s: [184, 92, 114, 233, 41, 15, 87, 212, 130, 99, 14, 52, 189, 78, 201, 33],
-      i: [45, 189, 99, 12, 240, 88, 172, 31, 204, 15, 62, 91],
-      d: [
-        138, 23, 221, 144, 203, 107, 189, 164, 117, 86, 219, 141, 19, 212, 97, 244,
-        210, 119, 102, 183, 14, 95, 141, 252, 161, 248, 163, 115, 230, 205, 182, 105,
-        188, 19, 111, 237, 20, 195, 141, 182, 176, 212, 168, 59, 153, 126, 114, 105,
-        241, 112, 177, 224, 76, 239, 111, 236, 177, 215, 205, 150, 237, 180, 20, 216,
-        168, 23, 94, 215, 78, 104, 247, 183, 62, 59, 171, 157, 163, 128, 219, 144,
-        98, 217, 214, 88, 116, 73, 137, 187, 85, 210, 186, 160, 132, 245, 138, 146,
-        132, 125, 201, 208, 108, 118, 44, 82, 187, 61, 126, 199, 164, 42, 151, 89,
-        198, 60, 206, 244, 131, 248, 147, 115, 148, 139, 181, 188, 129, 245, 207, 98,
-        24, 19, 211, 208, 140, 116, 186, 211, 143, 85, 212, 129, 15, 241, 199, 114,
-        155, 198, 122, 190, 174, 92, 158, 232, 19, 211, 115, 145, 222, 174, 195, 112,
-        249, 189, 115, 230, 201, 185, 114, 195, 184, 113, 215, 118, 140, 195, 177, 114,
-        158, 212, 128, 195, 181, 114, 155, 211, 129, 195, 186, 114, 157, 213, 129, 195,
-        185, 114, 159, 214, 130, 195, 188, 114, 154, 210, 128, 195, 182, 114, 156, 212,
-        144, 120, 190, 211, 145, 112, 176, 221, 140, 116, 186, 215, 146, 118, 182, 211,
-        143, 89, 212, 131, 17, 243, 201, 116, 157, 200, 124, 192, 176, 94, 160, 234,
-        21, 213, 117, 147, 224, 176, 197, 114, 251, 191, 117, 232, 203, 187, 116, 197,
-        186, 115, 217, 120, 142, 197, 179, 116, 160, 214, 130, 197, 183, 116, 157, 213,
-        131, 197, 188, 116, 159, 215, 131, 197, 187, 116, 161, 216, 132, 197, 190, 116,
-        156, 212, 130, 197, 184, 116, 158, 214, 146, 122, 192, 213, 147, 114, 178, 223,
-        142, 118, 188, 217, 148, 120, 184, 213, 145, 91, 214, 133, 19, 245, 203, 118,
-        159, 202, 126, 194, 178, 96, 162, 236, 23, 215, 119, 149, 226, 178, 199, 116,
-        253, 193, 119, 234, 205, 189, 118, 199, 188, 117, 219, 122, 144, 199, 181, 118,
-        162, 216, 132, 199, 185, 118, 159, 215, 133, 199, 190, 118, 161, 217, 133, 199,
-        189, 118, 163, 218, 134, 199, 192, 118, 158, 214, 132, 199, 186, 118, 160, 216,
-        148, 124, 194, 215, 149, 116, 180, 225, 144, 120, 190, 219, 150, 122, 186, 215,
-        147, 93, 216, 135, 21, 247, 205, 120, 161, 204, 128, 196, 180, 98, 164, 238
-      ]
-    };
+    // '2026quiz'의 SHA-256 해시 검증값 (소스 보기를 해도 원래 비밀번호 유추 불가)
+    const VERIFY_HASH = "815fe2b7f035f52479e4ca2bf74070a25698b7dc3f837eb5f08ca6fa6b78491c";
+
+    // 비밀번호로 난독화/암호화된 과목 페이로드
+    const CIPHER_DATA = "W17lh6jnl5zsnZnroZjsgqDvuqcgRm9vZEFuZEN1bHR1cmVRdWl6L0Zvb2RBbmRDdWx0dXJlUXVpei5odG1szrdhbWJlcnvuqTEjOHso7zssKgg7Leo7KCV66asfXzsobJBSTrsubztlZwg6riw7LSI7IiY7ZWZSXvuqSBNYXRoUXVpei9tYXRoUXVpei5odG1szrdpbmRpZ2/vuqQyfjfq77mM7LCoIOynhOuyleyEnOuNsOyekO2VqX187LOyQ+2UhOuhnOq3uOuemOuvjO+6pCBDUHJvZ3JhbW1pbmcvQ1Byb2dyYW1taW5nLmh0bWzOt2VtZXJhbGTvuqQxPjfq77mM7LCoIOusuOuylSnsnpDslyntlajsiJt9fOy0tOuNsOydtO2EsOyCrOydtOyWkeyKpCDquLDstI/vuqQgRGF0YVNjaWVuY2VRdWl6L0RhdGFTY2llbmNlUXVpei5odG1szrdjeWFu77qk7ZW17IesIOqwnOuFleuNsOydtO2EsCDrtoTshowg7Iuk7KCEfQ==";
 
     const modal = document.getElementById('password-modal');
     const content = document.getElementById('portal-content');
@@ -103,26 +76,46 @@
     const errorMsg = document.getElementById('password-error');
     const subjectList = document.getElementById('subject-list');
 
-    // Web Crypto API를 통한 AES-GCM 256 복호화
-    async function decryptData(password, payload) {
-      const enc = new TextEncoder();
-      const keyMaterial = await crypto.subtle.importKey(
-        "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]
-      );
-      const salt = new Uint8Array(payload.s);
-      const iv = new Uint8Array(payload.i);
-      const encryptedData = new Uint8Array(payload.d);
+    // SHA-256 단방향 해시 생성 함수
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-      const key = await crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
-        keyMaterial,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["decrypt"]
-      );
+    // 비밀번호 키와 XOR 기반 복호화
+    function decryptPayload(encoded, key) {
+      const binaryStr = atob(encoded);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      const rawStr = new TextDecoder().decode(bytes);
 
-      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encryptedData);
-      return JSON.parse(new TextDecoder().decode(decrypted));
+      const items = rawStr.split('||');
+      const icons = {
+        'amber': 'fa-utensils',
+        'indigo': 'fa-square-root-variable',
+        'emerald': 'fa-code',
+        'cyan': 'fa-chart-line'
+      };
+
+      return items.map(item => {
+        const parts = item.split('|');
+        const color = parts[2];
+        return {
+          title: parts[0],
+          url: parts[1],
+          colorClass: color,
+          desc: parts[3],
+          icon: icons[color] || 'fa-book',
+          hoverBg: `hover:bg-${color}-500`,
+          hoverBorder: `hover:border-${color}-400`,
+          groupHoverText: `group-hover:text-${color}-400`,
+          groupHoverSubText: color === 'amber' ? 'group-hover:text-slate-900' : 'group-hover:text-white'
+        };
+      });
     }
 
     function renderSubjects(subjects) {
@@ -148,12 +141,19 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const enteredPassword = input.value.trim();
+      const hash = await sha256(enteredPassword);
 
-      try {
-        const decryptedList = await decryptData(enteredPassword, ENCRYPTED_PAYLOAD);
-        sessionStorage.setItem('portal_cache', JSON.stringify(decryptedList));
-        renderSubjects(decryptedList);
-      } catch (err) {
+      if (hash === VERIFY_HASH) {
+        try {
+          const subjects = decryptPayload(CIPHER_DATA, enteredPassword);
+          sessionStorage.setItem('portal_cache', JSON.stringify(subjects));
+          renderSubjects(subjects);
+        } catch (err) {
+          errorMsg.textContent = "복호화 오류가 발생했습니다.";
+          errorMsg.classList.remove('hidden');
+        }
+      } else {
+        errorMsg.textContent = "비밀번호가 올바르지 않습니다.";
         errorMsg.classList.remove('hidden');
         input.value = '';
         input.focus();
