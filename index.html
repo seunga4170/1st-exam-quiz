@@ -22,7 +22,7 @@
         <i class="fa-solid fa-lock"></i>
       </div>
       <h2 class="text-lg font-bold text-white mb-1">보안 접속</h2>
-      <p class="text-xs text-slate-400 mb-5">비밀번호를 입력해야 과목 데이터가 복호화됩니다.</p>
+      <p class="text-xs text-slate-400 mb-5">비밀번호를 입력해 주세요.</p>
       
       <form id="password-form" class="space-y-3">
         <input 
@@ -32,7 +32,7 @@
           class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition"
           autocomplete="off"
         >
-        <p id="password-error" class="hidden text-xs text-rose-400 font-medium">비밀번호가 올바르지 않습니다.</p>
+        <p id="password-error" class="hidden text-xs text-rose-400 font-medium">비밀번호가 일치하지 않습니다.</p>
         <button 
           type="submit" 
           class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30"
@@ -43,7 +43,7 @@
     </div>
   </div>
 
-  <!-- 📖 메인 포털 화면 (비밀번호 복호화 성공 전까지 빈 화면) -->
+  <!-- 📖 메인 포털 화면 (버튼 목록은 HTML에 미리 두지 않고 비워둠) -->
   <div id="portal-content" class="hidden max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
     <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 border border-indigo-500/20">
       <i class="fa-solid fa-graduation-cap"></i>
@@ -54,8 +54,8 @@
       시험 대비 주차별 핵심 기출 및 변형 문제 연습
     </p>
 
-    <!-- 복호화 성공 시 동적으로 주입되는 영역 -->
-    <div id="subject-list" class="space-y-3.5"></div>
+    <!-- 올바른 비밀번호 검증 시에만 JS로 생성되는 영역 -->
+    <div id="subject-list-container" class="space-y-3.5"></div>
 
     <div class="mt-8 text-xs text-slate-500">
       새로고침할 때마다 문제 순서와 보기가 무작위로 변경됩니다.
@@ -63,119 +63,136 @@
   </div>
 
   <script>
-    // '2026quiz'의 정확한 표준 SHA-256 해시값
-    const VERIFY_HASH = "e0842ffbb7be23e207908b88fc7594916a0487595c27f32997f7ca7caea6c134";
+    // 즉시 실행 함수(IIFE)로 감싸 콘솔에서 내부 함수/변수에 일절 접근하지 못하게 차단
+    (() => {
+      const PASSWORD_HASH = "20833f2f80aa1e3d8f2f1353ba417a20211ee7da9c4b5f88e1183e3c9bfa6f11";
+      const AUTH_KEY = "portal_secure_token";
 
-    // Base64 UTF-8 인코딩된 과목 데이터 (소스 보기 시 원래 텍스트 직접 노출 방지)
-    const ENCODED_SUBJECTS = "W3sidGl0bGUiOiLsi53sg53tmZzqsrwg6 Presidential7ZmUIiwidXJsIjoiRm9vZEFuZEN1bHR1cmVRdWl6L0Zvb2RBbmRDdWx0dXJlUXVpei5odG1sIiwiZGVzYyI6IjF+OH주차 총정리\",\"colorClass\":\"amber\",\"icon\":\"fa-utensils\"}]";
+      const modal = document.getElementById('password-modal');
+      const content = document.getElementById('portal-content');
+      const form = document.getElementById('password-form');
+      const input = document.getElementById('password-input');
+      const errorMsg = document.getElementById('password-error');
+      const listContainer = document.getElementById('subject-list-container');
 
-    const modal = document.getElementById('password-modal');
-    const content = document.getElementById('portal-content');
-    const form = document.getElementById('password-form');
-    const input = document.getElementById('password-input');
-    const errorMsg = document.getElementById('password-error');
-    const subjectList = document.getElementById('subject-list');
+      async function sha256(text) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
 
-    // SHA-256 해시 변환 함수
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+      function buildPortal() {
+        modal.remove(); // 모달 DOM 자체를 문서에서 완전히 삭제 (style 조작으로 복구 불가)
+        content.classList.remove('hidden');
 
-    // 4개 과목 전체 데이터 생성
-    function getSubjectData() {
-      return [
-        {
-          title: "식생활과 문화",
-          desc: "1~8주차 총정리",
-          url: "FoodAndCultureQuiz/FoodAndCultureQuiz.html",
-          icon: "fa-utensils",
-          colorClass: "amber",
-          hoverBg: "hover:bg-amber-500",
-          hoverBorder: "hover:border-amber-400",
-          groupHoverText: "group-hover:text-amber-400",
-          groupHoverSubText: "group-hover:text-slate-900"
-        },
-        {
-          title: "AI를 위한 기초수학I",
-          desc: "2~7주차 진법·논리·집합",
-          url: "MathQuiz/mathQuiz.html",
-          icon: "fa-square-root-variable",
-          colorClass: "indigo",
-          hoverBg: "hover:bg-indigo-600",
-          hoverBorder: "hover:border-indigo-500",
-          groupHoverText: "group-hover:text-indigo-400",
-          groupHoverSubText: "group-hover:text-indigo-200"
-        },
-        {
-          title: "C프로그래밍",
-          desc: "1~7주차 문법·배열·함수",
-          url: "CProgramming/CProgramming.html",
-          icon: "fa-code",
-          colorClass: "emerald",
-          hoverBg: "hover:bg-emerald-600",
-          hoverBorder: "hover:border-emerald-500",
-          groupHoverText: "group-hover:text-emerald-400",
-          groupHoverSubText: "group-hover:text-emerald-200"
-        },
-        {
-          title: "데이터사이언스 기초",
-          desc: "핵심 개념·데이터 분석 실전",
-          url: "DataScienceQuiz/DataScienceQuiz.html",
-          icon: "fa-chart-line",
-          colorClass: "cyan",
-          hoverBg: "hover:bg-cyan-600",
-          hoverBorder: "hover:border-cyan-500",
-          groupHoverText: "group-hover:text-cyan-400",
-          groupHoverSubText: "group-hover:text-cyan-200"
-        }
-      ];
-    }
+        const subjects = [
+          {
+            title: "식생활과 문화",
+            desc: "1~8주차 총정리",
+            url: "FoodAndCultureQuiz/FoodAndCultureQuiz.html",
+            icon: "fa-utensils",
+            colorClass: "amber",
+            hoverBg: "hover:bg-amber-500",
+            hoverBorder: "hover:border-amber-400",
+            groupHoverText: "group-hover:text-amber-400",
+            groupHoverSubText: "group-hover:text-slate-900"
+          },
+          {
+            title: "AI를 위한 기초수학I",
+            desc: "2~7주차 진법·논리·집합",
+            url: "MathQuiz/mathQuiz.html",
+            icon: "fa-square-root-variable",
+            colorClass: "indigo",
+            hoverBg: "hover:bg-indigo-600",
+            hoverBorder: "hover:border-indigo-500",
+            groupHoverText: "group-hover:text-indigo-400",
+            groupHoverSubText: "group-hover:text-indigo-200"
+          },
+          {
+            title: "C프로그래밍",
+            desc: "1~7주차 문법·배열·함수",
+            url: "CProgramming/CProgramming.html",
+            icon: "fa-code",
+            colorClass: "emerald",
+            hoverBg: "hover:bg-emerald-600",
+            hoverBorder: "hover:border-emerald-500",
+            groupHoverText: "group-hover:text-emerald-400",
+            groupHoverSubText: "group-hover:text-emerald-200"
+          },
+          {
+            title: "데이터사이언스 기초",
+            desc: "핵심 개념·데이터 분석 실전",
+            url: "DataScienceQuiz/DataScienceQuiz.html",
+            icon: "fa-chart-line",
+            colorClass: "cyan",
+            hoverBg: "hover:bg-cyan-600",
+            hoverBorder: "hover:border-cyan-500",
+            groupHoverText: "group-hover:text-cyan-400",
+            groupHoverSubText: "group-hover:text-cyan-200"
+          }
+        ];
 
-    function renderSubjects() {
-      modal.classList.add('hidden');
-      content.classList.remove('hidden');
-
-      const subjects = getSubjectData();
-      subjectList.innerHTML = subjects.map(s => `
-        <a href="${s.url}" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 ${s.hoverBg} border border-slate-700/80 ${s.hoverBorder} transition-all duration-200 text-left shadow-sm">
-          <div class="flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-xl bg-${s.colorClass}-500/20 text-${s.colorClass}-400 group-hover:bg-slate-950 ${s.groupHoverText} flex items-center justify-center text-lg transition">
-              <i class="fa-solid ${s.icon}"></i>
+        listContainer.innerHTML = subjects.map(s => `
+          <a href="${s.url}" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 ${s.hoverBg} border border-slate-700/80 ${s.hoverBorder} transition-all duration-200 text-left shadow-sm">
+            <div class="flex items-center gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-${s.colorClass}-500/20 text-${s.colorClass}-400 group-hover:bg-slate-950 ${s.groupHoverText} flex items-center justify-center text-lg transition">
+                <i class="fa-solid ${s.icon}"></i>
+              </div>
+              <div>
+                <div class="font-bold text-white group-hover:text-white transition text-sm sm:text-base">${s.title}</div>
+                <div class="text-xs text-slate-400 ${s.groupHoverSubText} transition">${s.desc}</div>
+              </div>
             </div>
-            <div>
-              <div class="font-bold text-white group-hover:text-white transition text-sm sm:text-base">${s.title}</div>
-              <div class="text-xs text-slate-400 ${s.groupHoverSubText} transition">${s.desc}</div>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-white transition"></i>
-        </a>
-      `).join('');
-    }
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-white transition"></i>
+          </a>
+        `).join('');
+      }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const enteredPassword = input.value.trim();
-      const hash = await sha256(enteredPassword);
-
-      if (hash === VERIFY_HASH) {
-        sessionStorage.setItem('portal_auth', 'ok');
-        renderSubjects();
+      // 저장된 세션 토큰이 해시값과 정확히 일치하는지 검증
+      if (sessionStorage.getItem(AUTH_KEY) === PASSWORD_HASH) {
+        buildPortal();
       } else {
-        errorMsg.classList.remove('hidden');
-        input.value = '';
         input.focus();
       }
-    });
 
-    // 세션 유지 체크 (브라우저 탭 닫기 전까지는 새로고침해도 유지)
-    if (sessionStorage.getItem('portal_auth') === 'ok') {
-      renderSubjects();
-    } else {
-      input.focus();
-    }
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const entered = input.value.trim();
+        const enteredHash = await sha256(entered);
+
+        if (enteredHash === PASSWORD_HASH) {
+          sessionStorage.setItem(AUTH_KEY, PASSWORD_HASH);
+          buildPortal();
+        } else {
+          errorMsg.classList.remove('hidden');
+          input.value = '';
+          input.focus();
+        }
+      });
+
+      // 개발자 도구 단축키 및 우클릭 방지
+      document.addEventListener('keydown', (e) => {
+        const isMacDevTools = e.metaKey && e.altKey && (
+          e.code === 'KeyI' || e.code === 'KeyJ' || e.code === 'KeyC' || e.code === 'KeyU'
+        );
+        const isWinDevTools = e.key === 'F12' || (
+          e.ctrlKey && e.shiftKey && (e.code === 'KeyI' || e.code === 'KeyJ' || e.code === 'KeyC')
+        ) || (e.ctrlKey && e.code === 'KeyU');
+
+        if (isMacDevTools || isWinDevTools) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      });
+
+      document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        return false;
+      });
+    })();
   </script>
 </body>
 </html>
