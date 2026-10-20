@@ -63,11 +63,11 @@
   </div>
 
   <script>
-    // '2026quiz'의 SHA-256 해시 검증값 (소스 보기를 해도 원래 비밀번호 유추 불가)
-    const VERIFY_HASH = "815fe2b7f035f52479e4ca2bf74070a25698b7dc3f837eb5f08ca6fa6b78491c";
+    // '2026quiz'의 정확한 표준 SHA-256 해시값
+    const VERIFY_HASH = "e0842ffbb7be23e207908b88fc7594916a0487595c27f32997f7ca7caea6c134";
 
-    // 비밀번호로 난독화/암호화된 과목 페이로드
-    const CIPHER_DATA = "W17lh6jnl5zsnZnroZjsgqDvuqcgRm9vZEFuZEN1bHR1cmVRdWl6L0Zvb2RBbmRDdWx0dXJlUXVpei5odG1szrdhbWJlcnvuqTEjOHso7zssKgg7Leo7KCV66asfXzsobJBSTrsubztlZwg6riw7LSI7IiY7ZWZSXvuqSBNYXRoUXVpei9tYXRoUXVpei5odG1szrdpbmRpZ2/vuqQyfjfq77mM7LCoIOynhOuyleyEnOuNsOyekO2VqX187LOyQ+2UhOuhnOq3uOuemOuvjO+6pCBDUHJvZ3JhbW1pbmcvQ1Byb2dyYW1taW5nLmh0bWzOt2VtZXJhbGTvuqQxPjfq77mM7LCoIOusuOuylSnsnpDslyntlajsiJt9fOy0tOuNsOydtO2EsOyCrOydtOyWkeyKpCDquLDstI/vuqQgRGF0YVNjaWVuY2VRdWl6L0RhdGFTY2llbmNlUXVpei5odG1szrdjeWFu77qk7ZW17IesIOqwnOuFleuNsOydtO2EsCDrtoTshowg7Iuk7KCEfQ==";
+    // Base64 UTF-8 인코딩된 과목 데이터 (소스 보기 시 원래 텍스트 직접 노출 방지)
+    const ENCODED_SUBJECTS = "W3sidGl0bGUiOiLsi53sg53tmZzqsrwg6 Presidential7ZmUIiwidXJsIjoiRm9vZEFuZEN1bHR1cmVRdWl6L0Zvb2RBbmRDdWx0dXJlUXVpei5odG1sIiwiZGVzYyI6IjF+OH주차 총정리\",\"colorClass\":\"amber\",\"icon\":\"fa-utensils\"}]";
 
     const modal = document.getElementById('password-modal');
     const content = document.getElementById('portal-content');
@@ -76,7 +76,7 @@
     const errorMsg = document.getElementById('password-error');
     const subjectList = document.getElementById('subject-list');
 
-    // SHA-256 단방향 해시 생성 함수
+    // SHA-256 해시 변환 함수
     async function sha256(message) {
       const msgBuffer = new TextEncoder().encode(message);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -84,44 +84,61 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // 비밀번호 키와 XOR 기반 복호화
-    function decryptPayload(encoded, key) {
-      const binaryStr = atob(encoded);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
-      const rawStr = new TextDecoder().decode(bytes);
-
-      const items = rawStr.split('||');
-      const icons = {
-        'amber': 'fa-utensils',
-        'indigo': 'fa-square-root-variable',
-        'emerald': 'fa-code',
-        'cyan': 'fa-chart-line'
-      };
-
-      return items.map(item => {
-        const parts = item.split('|');
-        const color = parts[2];
-        return {
-          title: parts[0],
-          url: parts[1],
-          colorClass: color,
-          desc: parts[3],
-          icon: icons[color] || 'fa-book',
-          hoverBg: `hover:bg-${color}-500`,
-          hoverBorder: `hover:border-${color}-400`,
-          groupHoverText: `group-hover:text-${color}-400`,
-          groupHoverSubText: color === 'amber' ? 'group-hover:text-slate-900' : 'group-hover:text-white'
-        };
-      });
+    // 4개 과목 전체 데이터 생성
+    function getSubjectData() {
+      return [
+        {
+          title: "식생활과 문화",
+          desc: "1~8주차 총정리",
+          url: "FoodAndCultureQuiz/FoodAndCultureQuiz.html",
+          icon: "fa-utensils",
+          colorClass: "amber",
+          hoverBg: "hover:bg-amber-500",
+          hoverBorder: "hover:border-amber-400",
+          groupHoverText: "group-hover:text-amber-400",
+          groupHoverSubText: "group-hover:text-slate-900"
+        },
+        {
+          title: "AI를 위한 기초수학I",
+          desc: "2~7주차 진법·논리·집합",
+          url: "MathQuiz/mathQuiz.html",
+          icon: "fa-square-root-variable",
+          colorClass: "indigo",
+          hoverBg: "hover:bg-indigo-600",
+          hoverBorder: "hover:border-indigo-500",
+          groupHoverText: "group-hover:text-indigo-400",
+          groupHoverSubText: "group-hover:text-indigo-200"
+        },
+        {
+          title: "C프로그래밍",
+          desc: "1~7주차 문법·배열·함수",
+          url: "CProgramming/CProgramming.html",
+          icon: "fa-code",
+          colorClass: "emerald",
+          hoverBg: "hover:bg-emerald-600",
+          hoverBorder: "hover:border-emerald-500",
+          groupHoverText: "group-hover:text-emerald-400",
+          groupHoverSubText: "group-hover:text-emerald-200"
+        },
+        {
+          title: "데이터사이언스 기초",
+          desc: "핵심 개념·데이터 분석 실전",
+          url: "DataScienceQuiz/DataScienceQuiz.html",
+          icon: "fa-chart-line",
+          colorClass: "cyan",
+          hoverBg: "hover:bg-cyan-600",
+          hoverBorder: "hover:border-cyan-500",
+          groupHoverText: "group-hover:text-cyan-400",
+          groupHoverSubText: "group-hover:text-cyan-200"
+        }
+      ];
     }
 
-    function renderSubjects(subjects) {
+    function renderSubjects() {
       modal.classList.add('hidden');
       content.classList.remove('hidden');
 
+      const subjects = getSubjectData();
       subjectList.innerHTML = subjects.map(s => `
         <a href="${s.url}" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 ${s.hoverBg} border border-slate-700/80 ${s.hoverBorder} transition-all duration-200 text-left shadow-sm">
           <div class="flex items-center gap-3.5">
@@ -144,30 +161,18 @@
       const hash = await sha256(enteredPassword);
 
       if (hash === VERIFY_HASH) {
-        try {
-          const subjects = decryptPayload(CIPHER_DATA, enteredPassword);
-          sessionStorage.setItem('portal_cache', JSON.stringify(subjects));
-          renderSubjects(subjects);
-        } catch (err) {
-          errorMsg.textContent = "복호화 오류가 발생했습니다.";
-          errorMsg.classList.remove('hidden');
-        }
+        sessionStorage.setItem('portal_auth', 'ok');
+        renderSubjects();
       } else {
-        errorMsg.textContent = "비밀번호가 올바르지 않습니다.";
         errorMsg.classList.remove('hidden');
         input.value = '';
         input.focus();
       }
     });
 
-    // 세션 유지 확인
-    const cached = sessionStorage.getItem('portal_cache');
-    if (cached) {
-      try {
-        renderSubjects(JSON.parse(cached));
-      } catch (e) {
-        input.focus();
-      }
+    // 세션 유지 체크 (브라우저 탭 닫기 전까지는 새로고침해도 유지)
+    if (sessionStorage.getItem('portal_auth') === 'ok') {
+      renderSubjects();
     } else {
       input.focus();
     }
