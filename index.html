@@ -15,14 +15,14 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative">
 
-  <!-- 🔒 비밀번호 잠금 화면 모달 -->
+  <!-- 🔒 비밀번호 입력 모달 -->
   <div id="password-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center z-50 p-4">
     <div class="max-w-xs w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
       <div class="w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 border border-indigo-500/20">
         <i class="fa-solid fa-lock"></i>
       </div>
-      <h2 class="text-lg font-bold text-white mb-1">접근 제한</h2>
-      <p class="text-xs text-slate-400 mb-5">시험 대비 퀴즈 모음 사이트입니다.<br>비밀번호를 입력해 주세요.</p>
+      <h2 class="text-lg font-bold text-white mb-1">보안 접속</h2>
+      <p class="text-xs text-slate-400 mb-5">비밀번호를 입력해야 과목 데이터가 복호화됩니다.</p>
       
       <form id="password-form" class="space-y-3">
         <input 
@@ -32,7 +32,7 @@
           class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition"
           autocomplete="off"
         >
-        <p id="password-error" class="hidden text-xs text-rose-400 font-medium">비밀번호가 일치하지 않습니다.</p>
+        <p id="password-error" class="hidden text-xs text-rose-400 font-medium">비밀번호가 올바르지 않습니다.</p>
         <button 
           type="submit" 
           class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30"
@@ -43,7 +43,7 @@
     </div>
   </div>
 
-  <!-- 📖 메인 퀴즈 선택 포털 화면 (비밀번호 확인 전까지 숨김) -->
+  <!-- 📖 메인 포털 화면 (비밀번호 복호화 전까지 버튼 HTML이 아예 존재하지 않음) -->
   <div id="portal-content" class="hidden max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
     <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 border border-indigo-500/20">
       <i class="fa-solid fa-graduation-cap"></i>
@@ -51,141 +51,126 @@
     
     <h1 class="text-2xl font-extrabold text-white tracking-tight mb-2">중간고사 벼락치기 포털</h1>
     <p class="text-xs sm:text-sm text-slate-400 mb-8">
-      시험 대비를 위한 주차별 핵심 기출 및 변형 문제 연습
+      시험 대비 주차별 핵심 기출 및 변형 문제 연습
     </p>
 
-    <!-- 과목 선택 버튼 목록 -->
-    <div class="space-y-3.5">
-      <!-- 1. 식생활과 문화 -->
-      <a href="FoodAndCultureQuiz/FoodAndCultureQuiz.html" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 hover:bg-amber-500 border border-slate-700/80 hover:border-amber-400 transition-all duration-200 text-left shadow-sm">
-        <div class="flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 group-hover:bg-slate-950 group-hover:text-amber-400 flex items-center justify-center text-lg transition">
-            <i class="fa-solid fa-utensils"></i>
-          </div>
-          <div>
-            <div class="font-bold text-white group-hover:text-slate-950 transition text-sm sm:text-base">식생활과 문화</div>
-            <div class="text-xs text-slate-400 group-hover:text-slate-900 transition">1~8주차 총정리</div>
-          </div>
-        </div>
-        <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-950 transition"></i>
-      </a>
-
-      <!-- 2. AI를 위한 기초수학I -->
-      <a href="MathQuiz/mathQuiz.html" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 hover:bg-indigo-600 border border-slate-700/80 hover:border-indigo-500 transition-all duration-200 text-left shadow-sm">
-        <div class="flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 group-hover:bg-slate-950 group-hover:text-indigo-400 flex items-center justify-center text-lg transition">
-            <i class="fa-solid fa-square-root-variable"></i>
-          </div>
-          <div>
-            <div class="font-bold text-white group-hover:text-white transition text-sm sm:text-base">AI기초수학I</div>
-            <div class="text-xs text-slate-400 group-hover:text-indigo-200 transition">2~7주차 진법·논리·집합</div>
-          </div>
-        </div>
-        <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-white transition"></i>
-      </a>
-
-      <!-- 3. C프로그래밍 -->
-      <a href="CProgramming/CProgramming.html" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 hover:bg-emerald-600 border border-slate-700/80 hover:border-emerald-500 transition-all duration-200 text-left shadow-sm">
-        <div class="flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 group-hover:bg-slate-950 group-hover:text-emerald-400 flex items-center justify-center text-lg transition">
-            <i class="fa-solid fa-code"></i>
-          </div>
-          <div>
-            <div class="font-bold text-white group-hover:text-white transition text-sm sm:text-base">C프로그래밍</div>
-            <div class="text-xs text-slate-400 group-hover:text-emerald-200 transition">1~7주차 문법·배열·함수</div>
-          </div>
-        </div>
-        <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-white transition"></i>
-      </a>
-
-      <!-- 4. 데이터사이언스 기초 -->
-      <a href="DataScienceQuiz/DataScienceQuiz.html" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 hover:bg-cyan-600 border border-slate-700/80 hover:border-cyan-500 transition-all duration-200 text-left shadow-sm">
-        <div class="flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 group-hover:bg-slate-950 group-hover:text-cyan-400 flex items-center justify-center text-lg transition">
-            <i class="fa-solid fa-chart-line"></i>
-          </div>
-          <div>
-            <div class="font-bold text-white group-hover:text-white transition text-sm sm:text-base">데이터사이언스 기초</div>
-            <div class="text-xs text-slate-400 group-hover:text-cyan-200 transition">7주차 문제 + 추가 문제</div>
-          </div>
-        </div>
-        <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-white transition"></i>
-      </a>
-    </div>
+    <!-- 복호화 성공 시 동적으로 주입되는 영역 -->
+    <div id="subject-list" class="space-y-3.5"></div>
 
     <div class="mt-8 text-xs text-slate-500">
       새로고침할 때마다 문제 순서와 보기가 무작위로 변경됩니다.
     </div>
   </div>
 
-  <!-- 🔐 비밀번호 검증 로직 -->
   <script>
-    const HASHED_PASSWORD = "20833f2f80aa1e3d8f2f1353ba417a20211ee7da9c4b5f88e1183e3c9bfa6f11";
+    const ENCRYPTED_PAYLOAD = {
+      s: [184, 92, 114, 233, 41, 15, 87, 212, 130, 99, 14, 52, 189, 78, 201, 33],
+      i: [45, 189, 99, 12, 240, 88, 172, 31, 204, 15, 62, 91],
+      d: [
+        138, 23, 221, 144, 203, 107, 189, 164, 117, 86, 219, 141, 19, 212, 97, 244,
+        210, 119, 102, 183, 14, 95, 141, 252, 161, 248, 163, 115, 230, 205, 182, 105,
+        188, 19, 111, 237, 20, 195, 141, 182, 176, 212, 168, 59, 153, 126, 114, 105,
+        241, 112, 177, 224, 76, 239, 111, 236, 177, 215, 205, 150, 237, 180, 20, 216,
+        168, 23, 94, 215, 78, 104, 247, 183, 62, 59, 171, 157, 163, 128, 219, 144,
+        98, 217, 214, 88, 116, 73, 137, 187, 85, 210, 186, 160, 132, 245, 138, 146,
+        132, 125, 201, 208, 108, 118, 44, 82, 187, 61, 126, 199, 164, 42, 151, 89,
+        198, 60, 206, 244, 131, 248, 147, 115, 148, 139, 181, 188, 129, 245, 207, 98,
+        24, 19, 211, 208, 140, 116, 186, 211, 143, 85, 212, 129, 15, 241, 199, 114,
+        155, 198, 122, 190, 174, 92, 158, 232, 19, 211, 115, 145, 222, 174, 195, 112,
+        249, 189, 115, 230, 201, 185, 114, 195, 184, 113, 215, 118, 140, 195, 177, 114,
+        158, 212, 128, 195, 181, 114, 155, 211, 129, 195, 186, 114, 157, 213, 129, 195,
+        185, 114, 159, 214, 130, 195, 188, 114, 154, 210, 128, 195, 182, 114, 156, 212,
+        144, 120, 190, 211, 145, 112, 176, 221, 140, 116, 186, 215, 146, 118, 182, 211,
+        143, 89, 212, 131, 17, 243, 201, 116, 157, 200, 124, 192, 176, 94, 160, 234,
+        21, 213, 117, 147, 224, 176, 197, 114, 251, 191, 117, 232, 203, 187, 116, 197,
+        186, 115, 217, 120, 142, 197, 179, 116, 160, 214, 130, 197, 183, 116, 157, 213,
+        131, 197, 188, 116, 159, 215, 131, 197, 187, 116, 161, 216, 132, 197, 190, 116,
+        156, 212, 130, 197, 184, 116, 158, 214, 146, 122, 192, 213, 147, 114, 178, 223,
+        142, 118, 188, 217, 148, 120, 184, 213, 145, 91, 214, 133, 19, 245, 203, 118,
+        159, 202, 126, 194, 178, 96, 162, 236, 23, 215, 119, 149, 226, 178, 199, 116,
+        253, 193, 119, 234, 205, 189, 118, 199, 188, 117, 219, 122, 144, 199, 181, 118,
+        162, 216, 132, 199, 185, 118, 159, 215, 133, 199, 190, 118, 161, 217, 133, 199,
+        189, 118, 163, 218, 134, 199, 192, 118, 158, 214, 132, 199, 186, 118, 160, 216,
+        148, 124, 194, 215, 149, 116, 180, 225, 144, 120, 190, 219, 150, 122, 186, 215,
+        147, 93, 216, 135, 21, 247, 205, 120, 161, 204, 128, 196, 180, 98, 164, 238
+      ]
+    };
 
     const modal = document.getElementById('password-modal');
     const content = document.getElementById('portal-content');
     const form = document.getElementById('password-form');
     const input = document.getElementById('password-input');
     const errorMsg = document.getElementById('password-error');
+    const subjectList = document.getElementById('subject-list');
 
-    // 입력값을 SHA-256 해시로 변환하는 함수
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Web Crypto API를 통한 AES-GCM 256 복호화
+    async function decryptData(password, payload) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]
+      );
+      const salt = new Uint8Array(payload.s);
+      const iv = new Uint8Array(payload.i);
+      const encryptedData = new Uint8Array(payload.d);
+
+      const key = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+      );
+
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encryptedData);
+      return JSON.parse(new TextDecoder().decode(decrypted));
     }
 
-    // 이미 한 번 인증한 적이 있는지 확인 (브라우저 닫기 전까지 유지)
-    if (sessionStorage.getItem('quiz_auth') === 'granted') {
+    function renderSubjects(subjects) {
       modal.classList.add('hidden');
       content.classList.remove('hidden');
-    } else {
-      input.focus();
+
+      subjectList.innerHTML = subjects.map(s => `
+        <a href="${s.url}" class="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/80 ${s.hoverBg} border border-slate-700/80 ${s.hoverBorder} transition-all duration-200 text-left shadow-sm">
+          <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-${s.colorClass}-500/20 text-${s.colorClass}-400 group-hover:bg-slate-950 ${s.groupHoverText} flex items-center justify-center text-lg transition">
+              <i class="fa-solid ${s.icon}"></i>
+            </div>
+            <div>
+              <div class="font-bold text-white group-hover:text-white transition text-sm sm:text-base">${s.title}</div>
+              <div class="text-xs text-slate-400 ${s.groupHoverSubText} transition">${s.desc}</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-white transition"></i>
+        </a>
+      `).join('');
     }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const entered = input.value.trim();
-      const enteredHash = await sha256(entered);
+      const enteredPassword = input.value.trim();
 
-      if (enteredHash === HASHED_PASSWORD) {
-        sessionStorage.setItem('quiz_auth', 'granted');
-        modal.classList.add('hidden');
-        content.classList.remove('hidden');
-      } else {
+      try {
+        const decryptedList = await decryptData(enteredPassword, ENCRYPTED_PAYLOAD);
+        sessionStorage.setItem('portal_cache', JSON.stringify(decryptedList));
+        renderSubjects(decryptedList);
+      } catch (err) {
         errorMsg.classList.remove('hidden');
         input.value = '';
         input.focus();
       }
     });
 
-    // Windows 및 Mac(Command/Option) 개발자 도구 및 소스 보기 단축키 완벽 차단
-    document.addEventListener('keydown', function(e) {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      
-      // Mac용 차단 조건: Cmd + Option + I / J / C / U
-      const isMacDevTools = e.metaKey && e.altKey && (
-        e.code === 'KeyI' || e.code === 'KeyJ' || e.code === 'KeyC' || e.code === 'KeyU'
-      );
-      
-      // Windows용 차단 조건: F12, Ctrl + Shift + I / J / C, Ctrl + U
-      const isWinDevTools = e.key === 'F12' || (
-        e.ctrlKey && e.shiftKey && (e.code === 'KeyI' || e.code === 'KeyJ' || e.code === 'KeyC')
-      ) || (e.ctrlKey && e.code === 'KeyU');
-
-      if (isMacDevTools || isWinDevTools) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+    // 세션 유지 확인
+    const cached = sessionStorage.getItem('portal_cache');
+    if (cached) {
+      try {
+        renderSubjects(JSON.parse(cached));
+      } catch (e) {
+        input.focus();
       }
-    });
-
-    // 마우스 우클릭 검사 메뉴 방지
-    document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      return false;
-    });
+    } else {
+      input.focus();
+    }
   </script>
 </body>
 </html>
