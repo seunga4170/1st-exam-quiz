@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI기초수학 퀴즈</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body {
+      font-family: 'Pretendard', sans-serif;
+    }
+    .math-font {
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center p-4 sm:p-6 md:p-8">
+
+  <!-- 헤더 영역 -->
+  <header class="w-full max-w-3xl mb-6 text-center">
+    <div class="inline-flex items-center gap-2 bg-indigo-100 text-indigo-800 text-xs sm:text-sm font-semibold px-3 py-1 rounded-full mb-3">
+      <i class="fa-solid fa-square-root-variable"></i> AI기초수학 2~7주차 실전 모의고사
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+      AI기초수학 시험 대비 문제 풀이
+    </h1>
+  </header>
+
+  <!-- 메인 퀴즈 컨테이너 -->
+  <main class="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    
+    <!-- 퀴즈 설정 영역 (주차 선택 및 문항 수 조절) -->
+    <div class="bg-slate-800 text-slate-200 p-3 sm:p-4 border-b border-slate-700 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+      <div class="flex items-center gap-2">
+        <label for="week-select" class="font-bold text-indigo-400">범위:</label>
+        <select id="week-select" class="bg-slate-900 border border-slate-600 rounded px-2.5 py-1 text-white focus:outline-none focus:border-indigo-500">
+          <option value="all">전체 범위 (2~7주차)</option>
+          <option value="2">2주차 (수의 표현·진법)</option>
+          <option value="3">3주차 (보수·명제 기초)</option>
+          <option value="4">4주차 (조건명제·추론)</option>
+          <option value="5">5주차 (집합 개념·연산)</option>
+          <option value="6">6주차 (대수법칙·분할)</option>
+          <option value="7">7주차 (진단 문제 총정리)</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label for="count-select" class="font-bold text-indigo-400">문항 수:</label>
+        <select id="count-select" class="bg-slate-900 border border-slate-600 rounded px-2.5 py-1 text-white focus:outline-none focus:border-indigo-500">
+          <option value="10">10문제</option>
+          <option value="20" selected>20문제</option>
+          <option value="all">전체 풀기</option>
+        </select>
+        <button id="apply-filter-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1 rounded transition ml-1">
+          적용
+        </button>
+      </div>
+    </div>
+
+    <!-- 상단 진행도 및 타이머/점수 바 -->
+    <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span id="current-badge" class="bg-indigo-500 text-white text-xs font-bold px-2.5 py-1 rounded-md">Q1</span>
+        <span id="progress-text" class="text-sm text-slate-300 font-medium">1 / -</span>
+      </div>
+      <div class="flex items-center gap-4 text-sm font-medium">
+        <div class="flex items-center gap-1.5 text-slate-300">
+          <i class="fa-solid fa-clock text-indigo-400"></i>
+          <span id="timer">00:00</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-slate-300">
+          <i class="fa-solid fa-star text-indigo-400"></i>
+          <span id="score-counter">0 / 0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 진행 게이지 바 -->
+    <div class="w-full bg-slate-200 h-1.5">
+      <div id="progress-bar" class="bg-indigo-500 h-1.5 transition-all duration-300" style="width: 0%;"></div>
+    </div>
+
+    <!-- 퀴즈 화면 -->
+    <div id="quiz-view" class="p-6 sm:p-8">
+      <!-- 단원 분류 배지 -->
+      <div class="mb-3">
+        <span id="question-category" class="inline-block bg-slate-100 text-slate-600 text-xs font-medium px-2.5 py-1 rounded">
+          단원 분류
+        </span>
+      </div>
+
+      <!-- 문제 본문 -->
+      <h2 id="question-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-relaxed mb-6 math-font">
+        문제를 불러오는 중입니다...
+      </h2>
+
+      <!-- 보기 목록 -->
+      <div id="options-container" class="space-y-3">
+        <!-- JS로 동적 생성 -->
+      </div>
+
+      <!-- 정오답 피드백 및 해설 박스 -->
+      <div id="feedback-box" class="hidden mt-6 p-4 rounded-xl border">
+        <div class="flex items-center gap-2 font-bold mb-1" id="feedback-title"></div>
+        <p id="feedback-explanation" class="text-sm text-slate-700 leading-relaxed math-font"></p>
+      </div>
+
+      <!-- 하단 조작 버튼 바 -->
+      <div class="mt-8 pt-4 border-t border-slate-100 flex justify-between items-center">
+        <button id="restart-btn" class="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100">
+          <i class="fa-solid fa-arrow-rotate-right"></i> 다시 시작
+        </button>
+        <button id="next-btn" class="hidden bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-xl transition shadow-md items-center gap-2">
+          <span>다음 문제</span> <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 결과 화면 (모든 문항 완료 시 노출) -->
+    <div id="result-view" class="hidden p-8 text-center">
+      <div class="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-900 mb-2">테스트 완료!</h2>
+      <p class="text-slate-500 text-sm mb-6">수학 실전 모의고사 채점 결과입니다.</p>
+
+      <div class="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-400 font-semibold mb-1">총 문항</div>
+          <div id="final-total" class="text-xl font-bold text-slate-800">0</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-400 font-semibold mb-1">정답 문항</div>
+          <div id="final-correct" class="text-xl font-bold text-emerald-600">0</div>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="text-xs text-slate-400 font-semibold mb-1">정답률</div>
+          <div id="final-score" class="text-xl font-bold text-indigo-600">0%</div>
+        </div>
+      </div>
+
+      <!-- 오답 노트 영역 -->
+      <div class="max-w-xl mx-auto text-left mb-8">
+        <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-file-circle-check text-slate-600"></i> 오답 복습 및 정답 풀이
+        </h3>
+        <div id="incorrect-list" class="space-y-3 max-h-80 overflow-y-auto pr-1"></div>
+      </div>
+
+      <button id="retry-all-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition duration-200 inline-flex items-center gap-2">
+        <i class="fa-solid fa-rotate"></i> 새롭게 섞어서 다시 풀기
+      </button>
+    </div>
+
+  </main>
+
+  <!-- 1. 주차별 수학 문제 데이터 파일 로드 (math2.js ~ math7.js) -->
+  <script src="math2.js"></script>
+  <script src="math3.js"></script>
+  <script src="math4.js"></script>
+  <script src="math5.js"></script>
+  <script src="math6.js"></script>
+  <script src="math7.js"></script>
+
+  <!-- 2. 퀴즈 실행 엔진 로직 -->
+  <script>
+    // 각 주차별 파일(mathX.js)의 배열 변수명(mathXQuestions)을 취합
+    const rawQuestionBank = [
+      ...(typeof math2Questions !== 'undefined' ? math2Questions : []),
+      ...(typeof math3Questions !== 'undefined' ? math3Questions : []),
+      ...(typeof math4Questions !== 'undefined' ? math4Questions : []),
+      ...(typeof math5Questions !== 'undefined' ? math5Questions : []),
+      ...(typeof math6Questions !== 'undefined' ? math6Questions : []),
+      ...(typeof math7Questions !== 'undefined' ? math7Questions : [])
+    ];
+
+    let randomizedQuestions = [];
+    let currentIndex = 0;
+    let correctCount = 0;
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let userAnswers = [];
+
+    // 배열 셔플 (Fisher-Yates)
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // 퀴즈 초기화 및 필터링 적용
+    function initQuiz() {
+      // 1. 선택된 주차 필터링
+      const selectedWeek = document.getElementById('week-select').value;
+      let targetBank = [];
+
+      if (selectedWeek === 'all') {
+        targetBank = [...rawQuestionBank];
+      } else {
+        const weekMap = {
+          '2': typeof math2Questions !== 'undefined' ? math2Questions : [],
+          '3': typeof math3Questions !== 'undefined' ? math3Questions : [],
+          '4': typeof math4Questions !== 'undefined' ? math4Questions : [],
+          '5': typeof math5Questions !== 'undefined' ? math5Questions : [],
+          '6': typeof math6Questions !== 'undefined' ? math6Questions : [],
+          '7': typeof math7Questions !== 'undefined' ? math7Questions : []
+        };
+        targetBank = weekMap[selectedWeek] || [];
+      }
+
+      if (targetBank.length === 0) {
+        alert('선택한 범위에 문제가 없습니다. 해당 주차 js 파일을 확인해주세요.');
+        return;
+      }
+
+      // 2. 전체 문제 무작위 셔플
+      let shuffledQ = shuffleArray(targetBank);
+
+      // 3. 문항 수 선택 적용 (10문항, 20문항, 전체)
+      const selectedCount = document.getElementById('count-select').value;
+      if (selectedCount !== 'all') {
+        const count = parseInt(selectedCount, 10);
+        shuffledQ = shuffledQ.slice(0, count);
+      }
+
+      // 4. 각 문제의 4지선다 보기 무작위 셔플
+      randomizedQuestions = shuffledQ.map(q => ({
+        ...q,
+        shuffledOptions: shuffleArray(q.options)
+      }));
+
+      currentIndex = 0;
+      correctCount = 0;
+      userAnswers = [];
+      secondsElapsed = 0;
+
+      document.getElementById('result-view').classList.add('hidden');
+      document.getElementById('quiz-view').classList.remove('hidden');
+      document.getElementById('score-counter').textContent = '0 / ' + randomizedQuestions.length;
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(secondsElapsed % 60).padStart(2, '0');
+        document.getElementById('timer').textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      renderCurrentQuestion();
+    }
+
+    // 설정 적용 버튼 클릭 시 필터 반영
+    document.getElementById('apply-filter-btn').addEventListener('click', () => {
+      initQuiz();
+    });
+
+    // 문제 표시
+    function renderCurrentQuestion() {
+      const currentQ = randomizedQuestions[currentIndex];
+      const totalQ = randomizedQuestions.length;
+
+      document.getElementById('current-badge').textContent = `Q${currentIndex + 1}`;
+      document.getElementById('progress-text').textContent = `${currentIndex + 1} / ${totalQ}`;
+      document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / totalQ) * 100}%`;
+
+      document.getElementById('question-category').textContent = currentQ.category;
+      document.getElementById('question-text').textContent = currentQ.question;
+
+      const feedbackBox = document.getElementById('feedback-box');
+      feedbackBox.classList.add('hidden');
+      feedbackBox.className = "hidden mt-6 p-4 rounded-xl border";
+
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.classList.add('hidden');
+      nextBtn.classList.remove('flex');
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      currentQ.shuffledOptions.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "option-btn w-full text-left p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50 transition text-sm sm:text-base font-medium text-slate-800 flex items-start gap-3 shadow-sm focus:outline-none math-font";
+        
+        btn.innerHTML = `
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold shrink-0 mt-0.5">
+            ${idx + 1}
+          </span>
+          <span class="leading-relaxed flex-1">${optText}</span>
+        `;
+
+        btn.onclick = () => selectOption(btn, optText, currentQ);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    // 선택지 채점
+    function selectOption(selectedBtn, selectedText, questionObj) {
+      const allButtons = document.querySelectorAll('.option-btn');
+      allButtons.forEach(btn => btn.disabled = true);
+
+      const isCorrect = (selectedText.trim() === questionObj.answer.trim());
+
+      if (isCorrect) {
+        correctCount++;
+        document.getElementById('score-counter').textContent = `${correctCount} / ${randomizedQuestions.length}`;
+      }
+
+      userAnswers.push({
+        qNumber: currentIndex + 1,
+        question: questionObj.question,
+        selected: selectedText,
+        correct: questionObj.answer,
+        isCorrect: isCorrect,
+        rationale: questionObj.rationale
+      });
+
+      allButtons.forEach(btn => {
+        const textSpan = btn.querySelector('.leading-relaxed');
+        if (textSpan && textSpan.textContent.trim() === questionObj.answer.trim()) {
+          btn.className = "option-btn w-full text-left p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-bold flex items-start gap-3 math-font";
+          btn.querySelector('span:first-child').className = "inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold shrink-0 mt-0.5";
+        }
+      });
+
+      if (!isCorrect) {
+        selectedBtn.className = "option-btn w-full text-left p-4 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-950 font-bold flex items-start gap-3 math-font";
+        selectedBtn.querySelector('span:first-child').className = "inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold shrink-0 mt-0.5";
+      }
+
+      const feedbackBox = document.getElementById('feedback-box');
+      const feedbackTitle = document.getElementById('feedback-title');
+      const feedbackExp = document.getElementById('feedback-explanation');
+
+      feedbackBox.classList.remove('hidden');
+      if (isCorrect) {
+        feedbackBox.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
+        feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> 정답입니다!`;
+      } else {
+        feedbackBox.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900');
+        feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600"></i> 오답입니다. (정답: ${questionObj.answer})`;
+      }
+      feedbackExp.textContent = questionObj.rationale;
+
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.classList.remove('hidden');
+      nextBtn.classList.add('flex');
+      nextBtn.onclick = handleNextQuestion;
+    }
+
+    function handleNextQuestion() {
+      if (currentIndex < randomizedQuestions.length - 1) {
+        currentIndex++;
+        renderCurrentQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function finishQuiz() {
+      clearInterval(timerInterval);
+
+      document.getElementById('quiz-view').classList.add('hidden');
+      const resultView = document.getElementById('result-view');
+      resultView.classList.remove('hidden');
+
+      const totalCount = randomizedQuestions.length;
+      const percentage = Math.round((correctCount / totalCount) * 100);
+
+      document.getElementById('final-total').textContent = totalCount;
+      document.getElementById('final-correct').textContent = correctCount;
+      document.getElementById('final-score').textContent = `${percentage}%`;
+
+      const incorrectList = document.getElementById('incorrect-list');
+      incorrectList.innerHTML = '';
+
+      if (correctCount === totalCount) {
+        incorrectList.innerHTML = `<div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm font-semibold text-center">🎉 축하합니다! 모든 문제를 맞히셨습니다.</div>`;
+      } else {
+        userAnswers.filter(a => !a.isCorrect).forEach(item => {
+          const card = document.createElement('div');
+          card.className = "p-4 bg-white border border-rose-200 rounded-xl shadow-sm";
+          card.innerHTML = `
+            <div class="text-xs font-bold text-rose-600 mb-1">Q${item.qNumber} 오답</div>
+            <div class="text-sm font-bold text-slate-800 mb-2 math-font">${item.question}</div>
+            <div class="text-xs text-rose-700 mb-1 math-font"><span class="font-semibold">내가 고른 오답:</span> ${item.selected}</div>
+            <div class="text-xs text-emerald-700 font-semibold mb-2 math-font"><span class="font-semibold">정답:</span> ${item.correct}</div>
+            <div class="text-xs bg-slate-50 p-2.5 rounded border border-slate-200 text-slate-600 leading-relaxed math-font">${item.rationale}</div>
+          `;
+          incorrectList.appendChild(card);
+        });
+      }
+    }
+
+    document.getElementById('restart-btn').addEventListener('click', () => {
+      if (confirm('현재 시험을 종료하고 문제를 다시 섞어서 시작하시겠습니까?')) {
+        initQuiz();
+      }
+    });
+
+    document.getElementById('retry-all-btn').addEventListener('click', () => {
+      initQuiz();
+    });
+
+    window.addEventListener('DOMContentLoaded', initQuiz);
+  </script>
+</body>
+</html>
